@@ -1,5 +1,15 @@
 import Product from "../models/Product.js";
 
+export const getProduct = async (req, res) => {
+  try {
+    const products = await Product.findOne({ _id: req.params.id });
+
+    res.status(200).json(products);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
 export const getProducts = async (req, res) => {
   try {
     const products = await Product.find();
@@ -11,6 +21,7 @@ export const getProducts = async (req, res) => {
 };
 
 export const addProduct = async (req, res) => {
+  console.log(req.body);
   try {
     const newProduct = new Product(req.body);
 
