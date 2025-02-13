@@ -3,10 +3,13 @@ import {
   addSell,
   deleteSell,
   editSell,
+  getSell,
   getSells,
 } from "../controllers/sells.js";
 
 const router = express.Router();
+
+router.get("/:id", getSell);
 
 router.get("/", getSells);
 

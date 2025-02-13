@@ -9,6 +9,7 @@ import purchasesRouter from "./routes/purchases.js";
 import sellsRouter from "./routes/sells.js";
 
 const app = express();
+const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(cors());
@@ -28,6 +29,6 @@ app.use("/api/suppliers", suppliersRouter);
 app.use("/api/purchases", purchasesRouter);
 app.use("/api/sells", sellsRouter);
 
-app.listen(process.env.PORT, () => {
-  console.log("Server is running...");
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}...`);
 });

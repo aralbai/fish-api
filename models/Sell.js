@@ -2,11 +2,11 @@ import mongoose from "mongoose";
 
 const sellSchema = new mongoose.Schema(
   {
-    pruductId: {
+    productId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
-    clientId: {
+    custumerId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
@@ -17,6 +17,11 @@ const sellSchema = new mongoose.Schema(
     price: {
       type: String,
       required: true,
+    },
+    addedDate: {
+      type: Date,
+      required: true,
+      default: new Date(),
     },
     addedUserId: {
       type: mongoose.Schema.Types.ObjectId,

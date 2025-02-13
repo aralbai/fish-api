@@ -1,8 +1,18 @@
 import Custumer from "../models/Custumer.js";
 
+export const getCustumer = async (req, res) => {
+  try {
+    const custumer = await Custumer.findOne({ _id: req.params.id });
+
+    res.status(200).json(custumer);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
 export const getCustumers = async (req, res) => {
   try {
-    const custumers = await Custumer.find();
+    const custumers = await Custumer.find().sort({ createdAt: -1 });
 
     res.status(200).json(custumers);
   } catch (err) {

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const purchaseSchema = new mongoose.Schema(
   {
-    pruductId: {
+    productId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
@@ -21,6 +21,11 @@ const purchaseSchema = new mongoose.Schema(
     price: {
       type: String,
       required: true,
+    },
+    addedDate: {
+      type: Date,
+      required: true,
+      default: new Date(),
     },
     addedUserId: {
       type: mongoose.Schema.Types.ObjectId,

@@ -3,10 +3,13 @@ import {
   addSupplier,
   deleteSupplier,
   editSupplier,
+  getSupplier,
   getSuppliers,
 } from "../controllers/suppliers.js";
 
 const router = express.Router();
+
+router.get("/:id", getSupplier);
 
 router.get("/", getSuppliers);
 

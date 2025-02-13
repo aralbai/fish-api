@@ -3,10 +3,13 @@ import {
   addPurchase,
   deletePurchase,
   editPurchase,
+  getPurchase,
   getPurchases,
 } from "../controllers/purchases.js";
 
 const router = express.Router();
+
+router.get("/:id", getPurchase);
 
 router.get("/", getPurchases);
 

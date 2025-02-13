@@ -3,10 +3,13 @@ import {
   addCustumer,
   deleteCustumer,
   editCustumer,
+  getCustumer,
   getCustumers,
 } from "../controllers/custumers.js";
 
 const router = express.Router();
+
+router.get("/:id", getCustumer);
 
 router.get("/", getCustumers);
 

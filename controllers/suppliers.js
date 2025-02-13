@@ -1,8 +1,18 @@
 import Supplier from "../models/Supplier.js";
 
+export const getSupplier = async (req, res) => {
+  try {
+    const supplier = await Supplier.findOne({ _id: req.params.id });
+
+    res.status(200).json(supplier);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
 export const getSuppliers = async (req, res) => {
   try {
-    const suppliers = await Supplier.find();
+    const suppliers = await Supplier.find().sort({ createdAt: -1 });
 
     res.status(200).json(suppliers);
   } catch (err) {

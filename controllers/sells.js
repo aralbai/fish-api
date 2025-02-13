@@ -1,8 +1,18 @@
 import Sell from "../models/Sell.js";
 
+export const getSell = async (req, res) => {
+  try {
+    const sell = await Sell.find().sort({ createdAt: -1 });
+
+    res.status(200).json(sell);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
 export const getSells = async (req, res) => {
   try {
-    const sells = await Sell.find();
+    const sells = await Sell.find().sort({ createdAt: -1 });
 
     res.status(200).json(sells);
   } catch (err) {

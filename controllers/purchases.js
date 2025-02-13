@@ -1,8 +1,18 @@
 import Purchase from "../models/Purchase.js";
 
+export const getPurchase = async (req, res) => {
+  try {
+    const purchase = await Purchase.findOne({ _id: req.params.id });
+
+    res.status(200).json(purchase);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
 export const getPurchases = async (req, res) => {
   try {
-    const purchases = await Purchase.find();
+    const purchases = await Purchase.find().sort({ createdAt: -1 });
 
     res.status(200).json(purchases);
   } catch (err) {
