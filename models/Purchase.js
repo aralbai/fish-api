@@ -15,11 +15,15 @@ const purchaseSchema = new mongoose.Schema(
       required: true,
     },
     amount: {
-      type: String,
+      type: Number,
+      required: true,
+    },
+    remainingAmount: {
+      type: Number,
       required: true,
     },
     price: {
-      type: String,
+      type: Number,
       required: true,
     },
     addedDate: {

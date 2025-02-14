@@ -1,5 +1,10 @@
 import mongoose from "mongoose";
 
+const san = 5000;
+
+const url = `http://localhost:${san}`;
+const url2 = "http://localhost:" + san;
+
 const custumerSchema = new mongoose.Schema(
   {
     fullname: {

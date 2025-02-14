@@ -21,7 +21,10 @@ export const getPurchases = async (req, res) => {
 };
 
 export const addPurchase = async (req, res) => {
-  console.log(req.body);
+  req.body.amount = parseFloat(req.body.amount);
+  req.body.price = parseFloat(req.body.price);
+  req.body.remainingAmount = parseFloat(req.body.remainingAmount);
+
   try {
     const newPurchase = new Purchase(req.body);
 

@@ -21,7 +21,6 @@ export const getProducts = async (req, res) => {
 };
 
 export const addProduct = async (req, res) => {
-  console.log(req.body);
   try {
     const newProduct = new Product(req.body);
 
