@@ -2,12 +2,12 @@ import mongoose from "mongoose";
 
 const purchaseSchema = new mongoose.Schema(
   {
-    productId: {
-      type: mongoose.Schema.Types.ObjectId,
+    product: {
+      type: {},
       required: true,
     },
-    supplierId: {
-      type: mongoose.Schema.Types.ObjectId,
+    supplier: {
+      type: {},
       required: true,
     },
     carNumber: {
@@ -25,6 +25,10 @@ const purchaseSchema = new mongoose.Schema(
     price: {
       type: Number,
       required: true,
+    },
+    discount: {
+      type: Number,
+      default: 0,
     },
     addedDate: {
       type: Date,

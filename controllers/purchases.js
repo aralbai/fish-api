@@ -1,4 +1,7 @@
 import Purchase from "../models/Purchase.js";
+import Product from "../models/Product.js";
+import Supplier from "../models/Supplier.js";
+import mongoose from "mongoose";
 
 export const getPurchase = async (req, res) => {
   try {
@@ -21,11 +24,26 @@ export const getPurchases = async (req, res) => {
 };
 
 export const addPurchase = async (req, res) => {
-  req.body.amount = parseFloat(req.body.amount);
-  req.body.price = parseFloat(req.body.price);
-  req.body.remainingAmount = parseFloat(req.body.remainingAmount);
-
+  console.log(req.body);
   try {
+    let data = req.body;
+
+    if (mongoose.Types.ObjectId.isValid(req.body.product)) {
+      const product = await Product.findOne({ _id: req.body.product });
+
+      data.product = product;
+    } else {
+      console.log(req.body);
+    }
+
+    // Check custumer id is valid
+    if (mongoose.Types.ObjectId.isValid(req.body.supplier)) {
+      const supplier = await Supplier.findOne({ _id: req.body.supplier });
+
+      data.supplier = supplier;
+    } else {
+      data.supplier = { title: req.body.supplier };
+    }
     const newPurchase = new Purchase(req.body);
 
     await newPurchase.save();

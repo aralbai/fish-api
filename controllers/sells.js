@@ -1,4 +1,7 @@
 import Sell from "../models/Sell.js";
+import Custumer from "../models/Custumer.js";
+import Product from "../models/Product.js";
+import mongoose from "mongoose";
 
 export const getSell = async (req, res) => {
   try {
@@ -22,7 +25,27 @@ export const getSells = async (req, res) => {
 
 export const addSell = async (req, res) => {
   try {
-    const newSell = new Sell(req.body);
+    let data = req.body;
+
+    // Check product id is valid
+    if (mongoose.Types.ObjectId.isValid(req.body.product)) {
+      const product = await Product.findOne({ _id: req.body.product });
+
+      data.product = product;
+    } else {
+      data.product = { title: req.body.product };
+    }
+
+    // Check custumer id is valid
+    if (mongoose.Types.ObjectId.isValid(req.body.custumer)) {
+      const custumer = await Custumer.findOne({ _id: req.body.custumer });
+
+      data.custumer = custumer;
+    } else {
+      data.custumer = { fullname: req.body.custumer };
+    }
+
+    const newSell = new Sell(data);
 
     await newSell.save();
 

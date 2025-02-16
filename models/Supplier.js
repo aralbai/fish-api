@@ -8,11 +8,9 @@ const supplierSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-      required: true,
     },
     address: {
       type: String,
-      required: true,
     },
     addedUserId: {
       type: mongoose.Schema.Types.ObjectId,

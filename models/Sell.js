@@ -2,21 +2,25 @@ import mongoose from "mongoose";
 
 const sellSchema = new mongoose.Schema(
   {
-    productId: {
-      type: mongoose.Schema.Types.ObjectId,
+    product: {
+      type: {},
       required: true,
     },
-    custumerId: {
-      type: mongoose.Schema.Types.ObjectId,
+    custumer: {
+      type: {},
       required: true,
     },
     amount: {
-      type: String,
+      type: Number,
       required: true,
     },
     price: {
-      type: String,
+      type: Number,
       required: true,
+    },
+    discount: {
+      type: Number,
+      default: 0,
     },
     addedDate: {
       type: Date,
