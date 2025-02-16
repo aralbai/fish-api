@@ -13,15 +13,12 @@ const custumerSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-      required: true,
     },
     address: {
       type: String,
-      required: true,
     },
     limit: {
       type: Number,
-      required: true,
       default: -1,
     },
     addedUserId: {
