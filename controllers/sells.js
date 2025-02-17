@@ -1,6 +1,7 @@
 import Sell from "../models/Sell.js";
 import Custumer from "../models/Custumer.js";
 import Product from "../models/Product.js";
+import Purchase from "../models/Purchase.js";
 import mongoose from "mongoose";
 
 export const getSell = async (req, res) => {
@@ -26,6 +27,21 @@ export const getSells = async (req, res) => {
 export const addSell = async (req, res) => {
   try {
     let data = req.body;
+
+    // Check purchase id is valid
+    if (mongoose.Types.ObjectId.isValid(req.body.purchase)) {
+      const purchase = await Purchase.findOne({ _id: req.body.purchase });
+
+      if (purchase) {
+        data.purchase = purchase;
+
+        await Purchase.findByIdAndUpdate(req.body.purchase, {
+          remainingAmount: purchase.remainingAmount - req.body.amount,
+        });
+      } else {
+        return res.status(400).json("No purchase found!");
+      }
+    }
 
     // Check product id is valid
     if (mongoose.Types.ObjectId.isValid(req.body.product)) {

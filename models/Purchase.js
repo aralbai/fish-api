@@ -22,6 +22,10 @@ const purchaseSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    shortage: {
+      type: Number,
+      default: 0,
+    },
     price: {
       type: Number,
       required: true,

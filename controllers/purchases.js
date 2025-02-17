@@ -23,11 +23,28 @@ export const getPurchases = async (req, res) => {
   }
 };
 
+// Getting remainingAmount > 0 values
+export const getActivePurchases = async (req, res) => {
+  console.log(req.body);
+  try {
+    const purchases = await Purchase.find({ remainingAmount: { $gt: 0 } }).sort(
+      {
+        createdAt: -1,
+      }
+    );
+
+    res.status(200).json(purchases);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
 export const addPurchase = async (req, res) => {
   console.log(req.body);
   try {
     let data = req.body;
 
+    // Check product id is valid
     if (mongoose.Types.ObjectId.isValid(req.body.product)) {
       const product = await Product.findOne({ _id: req.body.product });
 
@@ -44,6 +61,7 @@ export const addPurchase = async (req, res) => {
     } else {
       data.supplier = { title: req.body.supplier };
     }
+
     const newPurchase = new Purchase(req.body);
 
     await newPurchase.save();

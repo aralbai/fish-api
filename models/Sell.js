@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 const sellSchema = new mongoose.Schema(
   {
+    purchase: {
+      type: {},
+      required: true,
+    },
     product: {
       type: {},
       required: true,
