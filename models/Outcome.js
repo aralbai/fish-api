@@ -1,20 +1,18 @@
 import mongoose from "mongoose";
 
-const custumerSchema = new mongoose.Schema(
+const outcomeSchema = new mongoose.Schema(
   {
-    fullname: {
+    amount: {
+      type: Number,
+      required: true,
+    },
+    purpose: {
       type: String,
       required: true,
     },
-    phone: {
-      type: String,
-    },
-    address: {
-      type: String,
-    },
-    limit: {
-      type: Number,
-      default: -1,
+    addedDate: {
+      type: Date,
+      default: new Date(),
     },
     addedUserId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -30,6 +28,6 @@ const custumerSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Custumer = new mongoose.model("Custumer", custumerSchema);
+const Outcome = new mongoose.model("Outcome", outcomeSchema);
 
-export default Custumer;
+export default Outcome;

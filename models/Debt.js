@@ -1,20 +1,22 @@
 import mongoose from "mongoose";
 
-const custumerSchema = new mongoose.Schema(
+const debtSchema = new mongoose.Schema(
   {
-    fullname: {
+    amount: {
+      type: Number,
+      required: true,
+    },
+    toWhom: {
       type: String,
       required: true,
     },
-    phone: {
+    purpose: {
       type: String,
     },
-    address: {
-      type: String,
-    },
-    limit: {
-      type: Number,
-      default: -1,
+    addedDate: {
+      type: Date,
+      required: true,
+      default: new Date(),
     },
     addedUserId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -30,6 +32,6 @@ const custumerSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Custumer = new mongoose.model("Custumer", custumerSchema);
+const Debt = new mongoose.model("Debt", debtSchema);
 
-export default Custumer;
+export default Debt;
