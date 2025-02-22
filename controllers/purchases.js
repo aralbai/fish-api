@@ -3,6 +3,7 @@ import Product from "../models/Product.js";
 import Supplier from "../models/Supplier.js";
 import mongoose from "mongoose";
 
+// Get one purchase with _id
 export const getPurchase = async (req, res) => {
   try {
     const purchase = await Purchase.findOne({ _id: req.params.id });
@@ -13,6 +14,7 @@ export const getPurchase = async (req, res) => {
   }
 };
 
+// Get all purchases
 export const getPurchases = async (req, res) => {
   try {
     const purchases = await Purchase.find().sort({ createdAt: -1 });
@@ -23,24 +25,8 @@ export const getPurchases = async (req, res) => {
   }
 };
 
-// Getting remainingAmount > 0 values
-export const getActivePurchases = async (req, res) => {
-  console.log(req.body);
-  try {
-    const purchases = await Purchase.find({ remainingAmount: { $gt: 0 } }).sort(
-      {
-        createdAt: -1,
-      }
-    );
-
-    res.status(200).json(purchases);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-};
-
+// Add new  purchase
 export const addPurchase = async (req, res) => {
-  console.log(req.body);
   try {
     let data = req.body;
 
@@ -50,7 +36,7 @@ export const addPurchase = async (req, res) => {
 
       data.product = product;
     } else {
-      console.log(req.body);
+      return res.status(400).json("Product not found!");
     }
 
     // Check custumer id is valid
@@ -59,7 +45,7 @@ export const addPurchase = async (req, res) => {
 
       data.supplier = supplier;
     } else {
-      data.supplier = { title: req.body.supplier };
+      return res.status(400).json("Supplier not found!");
     }
 
     const newPurchase = new Purchase(req.body);
@@ -72,6 +58,7 @@ export const addPurchase = async (req, res) => {
   }
 };
 
+// Edit purchase
 export const editPurchase = async (req, res) => {
   try {
     await Purchase.findByIdAndUpdate(req.params.id, req.body);
@@ -82,6 +69,7 @@ export const editPurchase = async (req, res) => {
   }
 };
 
+// Delete purchase
 export const deletePurchase = async (req, res) => {
   try {
     await Purchase.findByIdAndDelete(req.params.id);

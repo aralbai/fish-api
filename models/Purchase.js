@@ -18,6 +18,10 @@ const purchaseSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    debt: {
+      type: Number,
+      required: true,
+    },
     remainingAmount: {
       type: Number,
       required: true,

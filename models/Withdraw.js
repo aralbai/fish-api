@@ -6,12 +6,9 @@ const WithdrawSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    fromWhom: {
+    toWhom: {
       type: String,
       required: true,
-    },
-    purpose: {
-      type: String,
     },
     addedDate: {
       type: Date,

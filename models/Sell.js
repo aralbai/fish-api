@@ -26,6 +26,10 @@ const sellSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    debt: {
+      type: Number,
+      required: true,
+    },
     addedDate: {
       type: Date,
       required: true,

@@ -10,9 +10,6 @@ const DepositSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    purpose: {
-      type: String,
-    },
     addedDate: {
       type: Date,
       required: true,
