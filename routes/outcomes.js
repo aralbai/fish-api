@@ -4,9 +4,12 @@ import {
   deleteOutcome,
   editOutcome,
   getOutcomes,
+  getTotalOutcomes,
 } from "../controllers/outcomes.js";
 
 const router = express.Router();
+
+router.get("/total", getTotalOutcomes);
 
 router.get("/", getOutcomes);
 

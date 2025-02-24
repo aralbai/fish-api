@@ -10,6 +10,24 @@ export const getOutcomes = async (req, res) => {
   }
 };
 
+// Get total outcomes
+export const getTotalOutcomes = async (req, res) => {
+  try {
+    const totalOutcomes = await Outcome.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$amount" },
+        },
+      },
+    ]);
+
+    res.json({ totalOutcomes: totalOutcomes[0]?.total || 0 });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const addOutcome = async (req, res) => {
   try {
     const newOutcome = new Outcome(req.body);

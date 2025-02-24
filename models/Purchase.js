@@ -22,6 +22,10 @@ const purchaseSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    given: {
+      type: Number,
+      required: true,
+    },
     remainingAmount: {
       type: Number,
       required: true,

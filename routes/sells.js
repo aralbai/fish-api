@@ -3,11 +3,17 @@ import {
   addSell,
   deleteSell,
   editSell,
+  getDebtSells,
   getSell,
   getSells,
+  getTotalSells,
 } from "../controllers/sells.js";
 
 const router = express.Router();
+
+router.get("/debt", getDebtSells);
+
+router.get("/total", getTotalSells);
 
 router.get("/:id", getSell);
 

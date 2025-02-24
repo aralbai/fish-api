@@ -1,5 +1,23 @@
 import Withdraw from "../models/Withdraw.js";
 
+// Get total withdraws
+export const getTotalWithdraws = async (req, res) => {
+  try {
+    const totalWithdraws = await Withdraw.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$amount" },
+        },
+      },
+    ]);
+
+    res.json({ totalWithdraws: totalWithdraws[0]?.total || 0 });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const getWithdraw = async (req, res) => {
   try {
     const withdraw = await Withdraw.findOne({ _id: req.params.id });

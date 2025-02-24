@@ -3,11 +3,20 @@ import {
   addPurchase,
   deletePurchase,
   editPurchase,
+  getActivePurchases,
   getPurchase,
   getPurchases,
+  getTotalAmount,
+  getTotalPrice,
 } from "../controllers/purchases.js";
 
 const router = express.Router();
+
+router.get("/total/price", getTotalPrice);
+
+router.get("/total/amount", getTotalAmount);
+
+router.get("/active", getActivePurchases);
 
 router.get("/:id", getPurchase);
 

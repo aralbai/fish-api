@@ -1,7 +1,24 @@
 import Deposit from "../models/Deposit.js";
 
+// Get total deposits
+export const getTotalDeposits = async (req, res) => {
+  try {
+    const totalDeposits = await Deposit.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$amount" },
+        },
+      },
+    ]);
+
+    res.json({ totalDeposits: totalDeposits[0]?.total || 0 });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const getDeposits = async (req, res) => {
-  console.log(req.body);
   try {
     const deposits = await Deposit.find().sort({ createdAt: -1 });
 

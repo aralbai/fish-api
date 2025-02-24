@@ -14,6 +14,55 @@ export const getPurchase = async (req, res) => {
   }
 };
 
+// Get total price of purchases
+export const getTotalPrice = async (req, res) => {
+  try {
+    const totalPurchases = await Purchase.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$price" },
+        },
+      },
+    ]);
+
+    res.json({ totalPurchases: totalPurchases[0]?.total || 0 });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get total amount of purchases
+export const getTotalAmount = async (req, res) => {
+  try {
+    const totalPurchases = await Purchase.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$remainingAmount" },
+        },
+      },
+    ]);
+
+    res.json({ totalAmount: totalPurchases[0]?.total || 0 });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get active purchases (remainingAmount > 0)
+export const getActivePurchases = async (req, res) => {
+  try {
+    const activePurchases = await Purchase.find({
+      remainingAmount: { $gt: 0 },
+    });
+
+    res.status(200).json(activePurchases);
+  } catch (err) {
+    res.status(400).json(err);
+  }
+};
+
 // Get all purchases
 export const getPurchases = async (req, res) => {
   try {

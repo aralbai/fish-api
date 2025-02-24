@@ -4,17 +4,19 @@ import {
   deleteDeposit,
   editDeposit,
   getDeposits,
+  getTotalDeposits,
 } from "../controllers/deposits.js";
-import { balance } from "../middlewares/balance.js";
 
 const router = express.Router();
 
+router.get("/total", getTotalDeposits);
+
 router.get("/", getDeposits);
 
-router.post("/", balance, addDeposit);
+router.post("/", addDeposit);
 
 router.put("/:id", editDeposit);
 
-router.delete("/:id", balance, deleteDeposit);
+router.delete("/:id", deleteDeposit);
 
 export default router;

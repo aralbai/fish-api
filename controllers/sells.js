@@ -4,6 +4,17 @@ import Product from "../models/Product.js";
 import Purchase from "../models/Purchase.js";
 import mongoose from "mongoose";
 
+// Get only debt sells
+export const getDebtSells = async (req, res) => {
+  try {
+    const debtSells = await Sell.find({ debt: { $gt: 0 } });
+
+    res.json(debtSells);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const getSell = async (req, res) => {
   try {
     const sell = await Sell.find().sort({ createdAt: -1 });
@@ -11,6 +22,24 @@ export const getSell = async (req, res) => {
     res.status(200).json(sell);
   } catch (err) {
     res.status(500).json(err);
+  }
+};
+
+// Get total sells
+export const getTotalSells = async (req, res) => {
+  try {
+    const totalSales = await Sell.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$price" },
+        },
+      },
+    ]);
+
+    res.json({ totalSales: totalSales[0]?.total || 0 });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -83,6 +112,32 @@ export const editSell = async (req, res) => {
 
 export const deleteSell = async (req, res) => {
   try {
+    const { id } = req.params;
+
+    // Validate if ID is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid ID format" });
+    }
+
+    // Find document by _id
+    const sell = await Sell.findOne({ _id: id });
+
+    // check sell
+    if (!sell) {
+      return res.status(404).json({ error: "No sell found" });
+    }
+
+    // Validate if ID is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(sell.purchase._id)) {
+      return res.status(400).json({ error: "Invalid ID format" });
+    }
+
+    // Add deleting sell amount to purchase remainingAmount
+    await Purchase.findByIdAndUpdate(sell.purchase._id, {
+      $inc: { remainingAmount: sell.amount },
+    });
+
+    // Delete sell
     await Sell.findByIdAndDelete(req.params.id);
 
     res.status(200).json("Продажа удалена!");
