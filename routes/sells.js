@@ -6,12 +6,15 @@ import {
   getDebtSells,
   getSell,
   getSells,
+  getTotalDebts,
   getTotalSells,
 } from "../controllers/sells.js";
 
 const router = express.Router();
 
 router.get("/debt", getDebtSells);
+
+router.get("/total/debts", getTotalDebts);
 
 router.get("/total", getTotalSells);
 

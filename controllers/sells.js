@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 
 // Get only debt sells
 export const getDebtSells = async (req, res) => {
+  console.log("reed");
   try {
     const debtSells = await Sell.find({ debt: { $gt: 0 } });
 
@@ -15,6 +16,25 @@ export const getDebtSells = async (req, res) => {
   }
 };
 
+// Get total debts
+export const getTotalDebts = async (req, res) => {
+  try {
+    const totalDebts = await Sell.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$debt" },
+        },
+      },
+    ]);
+
+    res.json({ totalDebts: totalDebts[0]?.total || 0 });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get single sell
 export const getSell = async (req, res) => {
   try {
     const sell = await Sell.find().sort({ createdAt: -1 });
