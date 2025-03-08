@@ -32,9 +32,16 @@ export const addCustumer = async (req, res) => {
   }
 };
 
+// Edit custumer
 export const editCustumer = async (req, res) => {
   try {
-    await Custumer.findByIdAndUpdate(req.params.id, req.body);
+    await Custumer.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: req.body,
+      },
+      { new: true, runValidators: true }
+    );
 
     res.status(200).json("Клиент изменён!");
   } catch (err) {

@@ -110,7 +110,39 @@ export const addPurchase = async (req, res) => {
 // Edit purchase
 export const editPurchase = async (req, res) => {
   try {
-    await Purchase.findByIdAndUpdate(req.params.id, req.body);
+    await Purchase.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: req.body,
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    res.status(200).json("Покупка изменена!");
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+// Edit purchase with shortage
+export const editPurchaseShortage = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const shortage = req.body.shortage;
+
+    await Purchase.findByIdAndUpdate(
+      id,
+      {
+        $inc: { shortage: shortage, remainingAmount: -shortage },
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
     res.status(200).json("Покупка изменена!");
   } catch (err) {

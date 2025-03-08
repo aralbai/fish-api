@@ -3,6 +3,7 @@ import {
   addPurchase,
   deletePurchase,
   editPurchase,
+  editPurchaseShortage,
   getActivePurchases,
   getPurchase,
   getPurchases,
@@ -23,6 +24,8 @@ router.get("/:id", getPurchase);
 router.get("/", getPurchases);
 
 router.post("/", addPurchase);
+
+router.put("/shortage/:id", editPurchaseShortage);
 
 router.put("/:id", editPurchase);
 
