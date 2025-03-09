@@ -74,6 +74,30 @@ export const getPurchases = async (req, res) => {
   }
 };
 
+// Get all purchases with query
+export const getPurchasesQuery = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res
+        .status(400)
+        .json({ error: "startDate and endDate are required" });
+    }
+
+    const purchases = await Purchase.find({
+      addedDate: {
+        $gte: new Date(startDate), // Greater than or equal to startDate
+        $lte: new Date(endDate), // Less than or equal to endDate
+      },
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json(purchases);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
 // Add new  purchase
 export const addPurchase = async (req, res) => {
   try {

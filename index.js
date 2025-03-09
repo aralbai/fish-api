@@ -10,6 +10,7 @@ import sellsRouter from "./routes/sells.js";
 import outcomesRouter from "./routes/outcomes.js";
 import depositsRouter from "./routes/deposits.js";
 import withdrawsRouter from "./routes/withdraws.js";
+import usersRouter from "./routes/users.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -34,6 +35,7 @@ app.use("/api/sells", sellsRouter);
 app.use("/api/outcomes", outcomesRouter);
 app.use("/api/deposits", depositsRouter);
 app.use("/api/withdraws", withdrawsRouter);
+app.use("/api/users", usersRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}...`);

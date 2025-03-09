@@ -6,7 +6,6 @@ import mongoose from "mongoose";
 
 // Get only debt sells
 export const getDebtSells = async (req, res) => {
-  console.log("reed");
   try {
     const debtSells = await Sell.find({ debt: { $gt: 0 } });
 
@@ -37,7 +36,7 @@ export const getTotalDebts = async (req, res) => {
 // Get single sell
 export const getSell = async (req, res) => {
   try {
-    const sell = await Sell.find().sort({ createdAt: -1 });
+    const sell = await Sell.findOne({ _id: req.params.id });
 
     res.status(200).json(sell);
   } catch (err) {
@@ -63,9 +62,34 @@ export const getTotalSells = async (req, res) => {
   }
 };
 
+// Get all sells
 export const getSells = async (req, res) => {
   try {
     const sells = await Sell.find().sort({ createdAt: -1 });
+
+    res.status(200).json(sells);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+// Get all sells with query
+export const getSellsQuery = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res
+        .status(400)
+        .json({ error: "startDate and endDate are required" });
+    }
+
+    const sells = await Sell.find({
+      addedDate: {
+        $gte: new Date(startDate), // Greater than or equal to startDate
+        $lte: new Date(endDate), // Less than or equal to endDate
+      },
+    }).sort({ createdAt: -1 });
 
     res.status(200).json(sells);
   } catch (err) {
@@ -115,6 +139,29 @@ export const addSell = async (req, res) => {
     await newSell.save();
 
     res.status(201).json("Продажа добавлена!");
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+// Edit sell with repay debt
+export const editSellRepays = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    await Sell.findByIdAndUpdate(
+      id,
+      {
+        $push: { repays: req.body }, // Add a new repayment
+        $inc: { debt: -req.body.amount, given: req.body.amount }, // Reduce the debt
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    res.status(200).json("Продажа изменена!");
   } catch (err) {
     res.status(500).json(err);
   }

@@ -28,6 +28,30 @@ export const getTotalOutcomes = async (req, res) => {
   }
 };
 
+// Get all outcomes with query
+export const getOutcomesQuery = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res
+        .status(400)
+        .json({ error: "startDate and endDate are required" });
+    }
+
+    const outcomes = await Outcome.find({
+      addedDate: {
+        $gte: new Date(startDate), // Greater than or equal to startDate
+        $lte: new Date(endDate), // Less than or equal to endDate
+      },
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json(outcomes);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
 export const addOutcome = async (req, res) => {
   try {
     const newOutcome = new Outcome(req.body);

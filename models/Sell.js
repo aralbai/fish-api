@@ -31,8 +31,13 @@ const sellSchema = new mongoose.Schema(
       required: true,
     },
     repays: {
-      type: [{}],
-      default: [{}],
+      type: [
+        {
+          amount: { type: Number, required: true },
+          date: { type: Date, default: Date.now },
+        },
+      ],
+      default: [],
     },
     given: {
       type: Number,

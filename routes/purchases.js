@@ -7,6 +7,7 @@ import {
   getActivePurchases,
   getPurchase,
   getPurchases,
+  getPurchasesQuery,
   getTotalAmount,
   getTotalPrice,
 } from "../controllers/purchases.js";
@@ -18,6 +19,8 @@ router.get("/total/price", getTotalPrice);
 router.get("/total/amount", getTotalAmount);
 
 router.get("/active", getActivePurchases);
+
+router.get("/query", getPurchasesQuery);
 
 router.get("/:id", getPurchase);
 
