@@ -59,3 +59,25 @@ export const register = async (req, res) => {
     res.status(500).json(err);
   }
 };
+
+// Get users
+export const getUsers = async (req, res) => {
+  try {
+    const users = await User.find({ role: { $ne: "superadmin" } });
+
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+// Get users
+export const deleteUser = async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.params.id);
+
+    res.status(200).json("User has been deleted!");
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
