@@ -19,7 +19,11 @@ export const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user._id, username: user.username, role: user.role },
+      {
+        id: user._id,
+        username: user.username,
+        role: user.role,
+      },
       process.env.JWT_SECRET
     );
 
@@ -29,6 +33,8 @@ export const login = async (req, res) => {
         id: user._id,
         username: user.username,
         role: user.role,
+        fullname: user.fullname,
+        email: user.email,
       },
       message: "Login succesfully!",
     });
@@ -40,7 +46,7 @@ export const login = async (req, res) => {
 // Register
 export const register = async (req, res) => {
   try {
-    const { username, password, role } = req.body;
+    const { fullname, email, username, password, role } = req.body;
 
     const existingUser = await User.findOne({ username });
 
@@ -50,7 +56,13 @@ export const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = new User({ username, password: hashedPassword, role });
+    const newUser = new User({
+      fullname,
+      email,
+      username,
+      password: hashedPassword,
+      role,
+    });
 
     await newUser.save();
 
@@ -71,7 +83,56 @@ export const getUsers = async (req, res) => {
   }
 };
 
-// Get users
+// Update user
+export const updateUser = async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: req.body,
+      },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json("User has been updated!");
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+// Change password
+export const changePassword = async (req, res) => {
+  try {
+    const { username, password, newPassword } = req.body;
+
+    const user = await User.findOne({ username: username });
+
+    if (!user) {
+      return res.status(400).json("User not found");
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json("Invalid credentials");
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: { password: hashedPassword },
+      },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json("User has been updated!");
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+// Delete user
 export const deleteUser = async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
