@@ -1,7 +1,7 @@
 import Purchase from "../models/Purchase.js";
 import Product from "../models/Product.js";
 import Supplier from "../models/Supplier.js";
-import mongoose from "mongoose";
+import mongoose, { disconnect } from "mongoose";
 
 // Get one purchase with _id
 export const getPurchase = async (req, res) => {
@@ -101,27 +101,43 @@ export const getPurchasesQuery = async (req, res) => {
 // Add new  purchase
 export const addPurchase = async (req, res) => {
   try {
-    let data = req.body;
+    let data = {
+      ...req.body,
+      amount: parseFloat(req.body.amount),
+      remainingAmount: parseFloat(req.body.amount),
+      changedUserId: req.body.addedUserId,
+      debt: parseFloat(req.body.debt),
+      discount: parseFloat(req.body.discount),
+      perKilo: parseFloat(req.body.perKilo),
+    };
 
     // Check product id is valid
     if (mongoose.Types.ObjectId.isValid(req.body.product)) {
       const product = await Product.findOne({ _id: req.body.product });
 
-      data.product = product;
+      data.product = {
+        id: product?._id,
+        title: product?.title,
+      };
     } else {
       return res.status(400).json("Product not found!");
     }
 
-    // Check custumer id is valid
+    // Check supplier id is valid
     if (mongoose.Types.ObjectId.isValid(req.body.supplier)) {
       const supplier = await Supplier.findOne({ _id: req.body.supplier });
 
-      data.supplier = supplier;
+      data.supplier = {
+        id: supplier?._id,
+        title: supplier?.title,
+      };
     } else {
       return res.status(400).json("Supplier not found!");
     }
 
-    const newPurchase = new Purchase(req.body);
+    const newPurchase = new Purchase(data);
+
+    console.log(data);
 
     await newPurchase.save();
 

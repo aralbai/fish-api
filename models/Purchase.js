@@ -3,12 +3,24 @@ import mongoose from "mongoose";
 const purchaseSchema = new mongoose.Schema(
   {
     product: {
-      type: {},
-      required: true,
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+      },
+      title: {
+        type: String,
+        required: true,
+      },
     },
     supplier: {
-      type: {},
-      required: true,
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+      },
+      title: {
+        type: String,
+        required: true,
+      },
     },
     carNumber: {
       type: String,
@@ -18,21 +30,17 @@ const purchaseSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    debt: {
+    shortage: {
       type: Number,
-      required: true,
-    },
-    given: {
-      type: Number,
-      required: true,
+      default: 0,
     },
     remainingAmount: {
       type: Number,
       required: true,
     },
-    shortage: {
+    perKilo: {
       type: Number,
-      default: 0,
+      required: true,
     },
     price: {
       type: Number,
@@ -41,6 +49,14 @@ const purchaseSchema = new mongoose.Schema(
     discount: {
       type: Number,
       default: 0,
+    },
+    debt: {
+      type: Number,
+      required: true,
+    },
+    given: {
+      type: Number,
+      required: true,
     },
     addedDate: {
       type: Date,

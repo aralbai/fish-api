@@ -20,9 +20,13 @@ export const getSuppliers = async (req, res) => {
   }
 };
 
+// Add supplier
 export const addSupplier = async (req, res) => {
   try {
-    const newSupplier = new Supplier(req.body);
+    const newSupplier = new Supplier({
+      ...req.body,
+      changedUserId: req.body.addedUserId,
+    });
 
     await newSupplier.save();
 
@@ -32,9 +36,21 @@ export const addSupplier = async (req, res) => {
   }
 };
 
+// Edit supplier
 export const editSupplier = async (req, res) => {
   try {
-    await Supplier.findByIdAndUpdate(req.params.id, req.body);
+    console.log(req.body);
+
+    await Supplier.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: req.body,
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
     res.status(200).json("Поставщик изменён!");
   } catch (err) {

@@ -15,6 +15,20 @@ export const getDebtSells = async (req, res) => {
   }
 };
 
+// Get only single user debt sells
+export const getSingleUserDebtSells = async (req, res) => {
+  try {
+    const purchaseSells = await Sell.find({
+      debt: { $gt: 0 },
+      "custumer.id": req.params.custumerId,
+    }).sort({ createdAt: -1 });
+
+    res.json(purchaseSells);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Get total debts
 export const getTotalDebts = async (req, res) => {
   try {
@@ -97,9 +111,42 @@ export const getSellsQuery = async (req, res) => {
   }
 };
 
-export const addSell = async (req, res) => {
+//Get only single purchase sells
+export const getSinglePurchaseSells = async (req, res) => {
   try {
-    let data = req.body;
+    console.log(req.params.purchaseId);
+
+    const sells = await Sell.find({
+      purchase: req.params.purchaseId,
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json(sells);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+// Add new sell
+export const addSell = async (req, res) => {
+  console.log(req.body);
+  try {
+    let data = {
+      ...req.body,
+      amount: parseFloat(req.body.amount),
+      discount: parseFloat(req.body.discount),
+      debt: parseFloat(req.body.debt),
+      changedUserId: req.body.addedUserId,
+    };
+
+    // Check product id is valid
+    if (mongoose.Types.ObjectId.isValid(req.body.product)) {
+      const product = await Product.findOne({ _id: req.body.product });
+
+      data.product = {
+        id: req.body.product,
+        title: product?.title,
+      };
+    }
 
     // Check purchase id is valid
     if (mongoose.Types.ObjectId.isValid(req.body.purchase)) {
@@ -116,20 +163,17 @@ export const addSell = async (req, res) => {
       }
     }
 
-    // Check product id is valid
-    if (mongoose.Types.ObjectId.isValid(req.body.product)) {
-      const product = await Product.findOne({ _id: req.body.product });
-
-      data.product = product;
-    } else {
-      data.product = { title: req.body.product };
-    }
-
     // Check custumer id is valid
     if (mongoose.Types.ObjectId.isValid(req.body.custumer)) {
       const custumer = await Custumer.findOne({ _id: req.body.custumer });
 
-      data.custumer = custumer;
+      if (parseFloat(req.body.debt) > 0) {
+        await Custumer.findByIdAndUpdate(req.body.custumer, {
+          $inc: { debt: req.body.debt },
+        });
+      }
+
+      data.custumer = { id: req.body.custumer, fullname: custumer?.fullname };
     } else {
       data.custumer = { fullname: req.body.custumer };
     }

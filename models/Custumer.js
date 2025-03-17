@@ -16,15 +16,17 @@ const custumerSchema = new mongoose.Schema(
       type: Number,
       default: -1,
     },
+    debt: {
+      type: Number,
+      default: 0,
+    },
     addedUserId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      default: "679a0e92d45ceffc2233ed55",
     },
     changedUserId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      default: "679a0e92d45ceffc2233ed55",
     },
   },
   { timestamps: true }

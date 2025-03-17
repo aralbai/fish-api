@@ -3,6 +3,7 @@ import {
   addCustumer,
   deleteCustumer,
   editCustumer,
+  editCustumerLimit,
   getCustumer,
   getCustumers,
 } from "../controllers/custumers.js";
@@ -14,6 +15,8 @@ router.get("/:id", getCustumer);
 router.get("/", getCustumers);
 
 router.post("/", addCustumer);
+
+router.put("/limit/:id", editCustumerLimit);
 
 router.put("/:id", editCustumer);
 

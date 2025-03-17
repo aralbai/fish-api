@@ -20,8 +20,15 @@ export const getProducts = async (req, res) => {
   }
 };
 
+// Add new product
 export const addProduct = async (req, res) => {
   try {
+    const existingProduct = await Product.findOne({ title: req.body.title });
+
+    if (existingProduct) {
+      return res.status(400).json({ message: "Есть товар с таким названием!" });
+    }
+
     const newProduct = new Product(req.body);
 
     await newProduct.save();
@@ -32,9 +39,26 @@ export const addProduct = async (req, res) => {
   }
 };
 
+// Edit product
 export const editProduct = async (req, res) => {
   try {
-    await Product.findByIdAndUpdate(req.params.id, req.body);
+    const { changedUserId, title } = req.body;
+
+    const existingProduct = await Product.findOne({ title });
+    if (existingProduct) {
+      return res.status(400).json({ message: "Есть товар с таким названием!" });
+    }
+
+    await Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          title,
+          changedUserId,
+        },
+      },
+      { new: true, runValidators: true }
+    );
 
     res.status(200).json("Товар был изменен!");
   } catch (err) {
@@ -42,6 +66,7 @@ export const editProduct = async (req, res) => {
   }
 };
 
+// Delete product
 export const deleteProduct = async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);

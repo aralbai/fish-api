@@ -2,6 +2,7 @@ import expres from "express";
 import {
   changePassword,
   deleteUser,
+  getAllUsers,
   getUsers,
   login,
   register,
@@ -11,6 +12,8 @@ import {
 const router = expres.Router();
 
 router.get("/", getUsers);
+
+router.get("/all", getAllUsers);
 
 router.post("/login", login);
 

@@ -8,7 +8,6 @@ const userSchema = new mongosee.Schema(
     },
     email: {
       type: String,
-      required: true,
     },
     username: {
       type: String,

@@ -3,17 +3,30 @@ import mongoose from "mongoose";
 const sellSchema = new mongoose.Schema(
   {
     purchase: {
-      type: {},
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
     product: {
-      type: {},
-      required: true,
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+      },
+      title: {
+        type: String,
+        required: true,
+      },
     },
     custumer: {
-      type: {},
-      required: true,
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+      },
+      fullname: {
+        type: String,
+        required: true,
+      },
     },
+
     amount: {
       type: Number,
       required: true,
@@ -30,6 +43,10 @@ const sellSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    given: {
+      type: Number,
+      required: true,
+    },
     repays: {
       type: [
         {
@@ -39,10 +56,6 @@ const sellSchema = new mongoose.Schema(
       ],
       default: [],
     },
-    given: {
-      type: Number,
-      required: true,
-    },
     addedDate: {
       type: Date,
       required: true,
@@ -51,12 +64,10 @@ const sellSchema = new mongoose.Schema(
     addedUserId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      default: "679a0e92d45ceffc2233ed55",
     },
     changedUserId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      default: "679a0e92d45ceffc2233ed55",
     },
   },
   { timestamps: true }
