@@ -65,7 +65,7 @@ export const getTotalSells = async (req, res) => {
       {
         $group: {
           _id: null,
-          total: { $sum: "$price" },
+          total: { $sum: "$given" },
         },
       },
     ]);

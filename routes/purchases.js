@@ -8,6 +8,8 @@ import {
   getPurchase,
   getPurchases,
   getPurchasesQuery,
+  getSingleSupplierDebtPurchases,
+  getSingleSupplierPurchases,
   getTotalAmount,
   getTotalPrice,
 } from "../controllers/purchases.js";
@@ -17,6 +19,10 @@ const router = express.Router();
 router.get("/total/price", getTotalPrice);
 
 router.get("/total/amount", getTotalAmount);
+
+router.get("/single/debts/:supplierId", getSingleSupplierDebtPurchases);
+
+router.get("/supplier/purchases/:supplierId", getSingleSupplierPurchases);
 
 router.get("/active", getActivePurchases);
 

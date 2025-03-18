@@ -21,12 +21,39 @@ export const getTotalPrice = async (req, res) => {
       {
         $group: {
           _id: null,
-          total: { $sum: "$price" },
+          total: { $sum: "$given" },
         },
       },
     ]);
 
     res.json({ totalPurchases: totalPurchases[0]?.total || 0 });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get only single supplier purchases
+export const getSingleSupplierPurchases = async (req, res) => {
+  try {
+    const debtPurchases = await Purchase.find({
+      "supplier.id": req.params.supplierId,
+    }).sort({ createdAt: -1 });
+
+    res.json(debtPurchases);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get only single supplier debt purchases
+export const getSingleSupplierDebtPurchases = async (req, res) => {
+  try {
+    const debtPurchases = await Purchase.find({
+      debt: { $gt: 0 },
+      "supplier.id": req.params.supplierId,
+    }).sort({ createdAt: -1 });
+
+    res.json(debtPurchases);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -66,7 +93,7 @@ export const getActivePurchases = async (req, res) => {
 // Get all purchases
 export const getPurchases = async (req, res) => {
   try {
-    const purchases = await Purchase.find().sort({ createdAt: -1 });
+    const purchases = await Purchase.find().sort({ addedDate: -1 });
 
     res.status(200).json(purchases);
   } catch (err) {
@@ -108,7 +135,7 @@ export const addPurchase = async (req, res) => {
       changedUserId: req.body.addedUserId,
       debt: parseFloat(req.body.debt),
       discount: parseFloat(req.body.discount),
-      perKilo: parseFloat(req.body.perKilo),
+      price: parseFloat(req.body.price),
     };
 
     // Check product id is valid
@@ -149,11 +176,34 @@ export const addPurchase = async (req, res) => {
 
 // Edit purchase
 export const editPurchase = async (req, res) => {
+  const data = {
+    product: req.body.product,
+    supplier: req.body.supplier,
+    carNumber: req.body.carNumber,
+    addedDate: new Date(req.body.addedDate),
+    amount: parseFloat(req.body.amount),
+    price: parseFloat(req.body.price),
+    discount: parseFloat(req.body.discount),
+    debt: parseFloat(req.body.debt),
+    changedUserId: req.body.changedUserId,
+    totalPrice:
+      parseFloat(req.body.price) * parseFloat(req.body.amount) -
+      parseFloat(req.body.discount),
+    given:
+      parseFloat(req.body.price) * parseFloat(req.body.amount) -
+      parseFloat(req.body.discount) -
+      parseFloat(req.body.debt),
+    remainingAmount:
+      parseFloat(req.body.amount) - parseFloat(req.body.minAmount),
+  };
+
+  console.log(data);
+
   try {
     await Purchase.findByIdAndUpdate(
       req.params.id,
       {
-        $set: req.body,
+        $set: data,
       },
       {
         new: true,
@@ -173,16 +223,24 @@ export const editPurchaseShortage = async (req, res) => {
     const id = req.params.id;
     const shortage = req.body.shortage;
 
-    await Purchase.findByIdAndUpdate(
-      id,
-      {
-        $inc: { shortage: shortage, remainingAmount: -shortage },
-      },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+      const purchase = await Purchase.findOne({ _id: req.params.id });
+
+      await Purchase.findByIdAndUpdate(
+        id,
+        {
+          shortage: shortage,
+          remainingAmount:
+            purchase?.shortage + purchase?.remainingAmount - shortage,
+        },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+    } else {
+      return res.status(400).json("Product not found!");
+    }
 
     res.status(200).json("Покупка изменена!");
   } catch (err) {

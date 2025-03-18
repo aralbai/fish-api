@@ -38,11 +38,11 @@ const purchaseSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    perKilo: {
+    price: {
       type: Number,
       required: true,
     },
-    price: {
+    totalPrice: {
       type: Number,
       required: true,
     },
