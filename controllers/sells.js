@@ -1,8 +1,7 @@
-import Sell from "../models/Sell.js";
-import Custumer from "../models/Custumer.js";
-import Product from "../models/Product.js";
-import Purchase from "../models/Purchase.js";
 import mongoose from "mongoose";
+import Sell from "../models/Sell.js";
+import Purchase from "../models/Purchase.js";
+import Repay from "../models/Repay.js";
 
 // Get only debt sells
 export const getDebtSells = async (req, res) => {
@@ -117,7 +116,7 @@ export const getSinglePurchaseSells = async (req, res) => {
     console.log(req.params.purchaseId);
 
     const sells = await Sell.find({
-      purchase: req.params.purchaseId,
+      purchaseId: req.params.purchaseId,
     }).sort({ createdAt: -1 });
 
     res.status(200).json(sells);
@@ -131,51 +130,39 @@ export const addSell = async (req, res) => {
   console.log(req.body);
   try {
     let data = {
-      ...req.body,
+      purchaseId: req.body.purchaseId,
+      product: req.body.product,
+      custumer: req.body.custumer,
       amount: parseFloat(req.body.amount),
+      price: parseFloat(req.body.price),
+      totalPrice:
+        parseFloat(req.body.amount) * parseFloat(req.body.price) -
+        parseFloat(req.body.discount),
       discount: parseFloat(req.body.discount),
       debt: parseFloat(req.body.debt),
-      changedUserId: req.body.addedUserId,
+      given:
+        parseFloat(req.body.amount) * parseFloat(req.body.price) -
+        parseFloat(req.body.discount) -
+        parseFloat(req.body.debt),
+      addedDate: new Date(req.body.addedDate),
+      addedUserId: req.body.addedUserId,
     };
 
-    // Check product id is valid
-    if (mongoose.Types.ObjectId.isValid(req.body.product)) {
-      const product = await Product.findOne({ _id: req.body.product });
-
-      data.product = {
-        id: req.body.product,
-        title: product?.title,
-      };
-    }
-
-    // Check purchase id is valid
-    if (mongoose.Types.ObjectId.isValid(req.body.purchase)) {
-      const purchase = await Purchase.findOne({ _id: req.body.purchase });
-
-      if (purchase) {
-        data.purchase = purchase;
-
-        await Purchase.findByIdAndUpdate(req.body.purchase, {
-          remainingAmount: purchase.remainingAmount - req.body.amount,
-        });
-      } else {
-        return res.status(400).json("No purchase found!");
-      }
-    }
-
-    // Check custumer id is valid
-    if (mongoose.Types.ObjectId.isValid(req.body.custumer)) {
-      const custumer = await Custumer.findOne({ _id: req.body.custumer });
-
-      if (parseFloat(req.body.debt) > 0) {
-        await Custumer.findByIdAndUpdate(req.body.custumer, {
-          $inc: { debt: req.body.debt },
-        });
-      }
-
-      data.custumer = { id: req.body.custumer, fullname: custumer?.fullname };
+    // Check purchaseId is valid
+    if (mongoose.Types.ObjectId.isValid(req.body.purchaseId)) {
+      // Change purchase remaining amount
+      await Purchase.findByIdAndUpdate(
+        req.body.purchaseId,
+        {
+          $inc: { remainingAmount: -req.body.amount },
+        },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
     } else {
-      data.custumer = { fullname: req.body.custumer };
+      return res.status(400).json("Purchase not found!");
     }
 
     const newSell = new Sell(data);
@@ -188,21 +175,59 @@ export const addSell = async (req, res) => {
   }
 };
 
-// Edit sell with repay debt
-export const editSellRepays = async (req, res) => {
+// Edit sell
+export const editSell = async (req, res) => {
   try {
-    const id = req.params.id;
+    const {
+      custumer,
+      addedDate,
+      amount,
+      price,
+      discount,
+      debt,
+      changedUserId,
+      purchaseId,
+      prevAmount,
+    } = req.body;
 
-    await Sell.findByIdAndUpdate(
-      id,
+    const remaining = parseFloat(amount) - parseFloat(prevAmount);
+
+    const data = {
+      custumer,
+      addedDate: new Date(addedDate),
+      amount: parseFloat(amount),
+      price: parseFloat(price),
+      discount: parseFloat(discount),
+      debt: parseFloat(debt),
+      changedUserId,
+      totalPrice: parseFloat(amount) * parseFloat(price) - parseFloat(discount),
+      given:
+        parseFloat(amount) * parseFloat(price) -
+        parseFloat(discount) -
+        parseFloat(debt),
+    };
+
+    const updatedSell = await Sell.findByIdAndUpdate(
+      req.params.id,
       {
-        $push: { repays: req.body }, // Add a new repayment
-        $inc: { debt: -req.body.amount, given: req.body.amount }, // Reduce the debt
+        $set: data,
       },
       {
         new: true,
         runValidators: true,
       }
+    );
+
+    if (!updatedSell) {
+      return res.stutus(400).json("Sell not found!");
+    }
+
+    await Purchase.findByIdAndUpdate(
+      purchaseId,
+      {
+        $inc: { remainingAmount: -remaining },
+      },
+      { new: true, runValidators: true }
     );
 
     res.status(200).json("Продажа изменена!");
@@ -211,16 +236,7 @@ export const editSellRepays = async (req, res) => {
   }
 };
 
-export const editSell = async (req, res) => {
-  try {
-    await Sell.findByIdAndUpdate(req.params.id, req.body);
-
-    res.status(200).json("Продажа изменена!");
-  } catch (err) {
-    res.status(500).json(err);
-  }
-};
-
+// Delete sell
 export const deleteSell = async (req, res) => {
   try {
     const { id } = req.params;
@@ -239,17 +255,23 @@ export const deleteSell = async (req, res) => {
     }
 
     // Validate if ID is a valid MongoDB ObjectId
-    if (!mongoose.Types.ObjectId.isValid(sell.purchase._id)) {
+    if (!mongoose.Types.ObjectId.isValid(sell.purchaseId)) {
       return res.status(400).json({ error: "Invalid ID format" });
     }
 
     // Add deleting sell amount to purchase remainingAmount
-    await Purchase.findByIdAndUpdate(sell.purchase._id, {
+    await Purchase.findByIdAndUpdate(sell.purchaseId, {
       $inc: { remainingAmount: sell.amount },
     });
 
     // Delete sell
-    await Sell.findByIdAndDelete(req.params.id);
+    const deletedSell = await Sell.findByIdAndDelete(req.params.id);
+
+    if (!deletedSell) {
+      return res.status(400).json("Sell not found!");
+    }
+
+    await Repay.deleteMany({ sellId: id });
 
     res.status(200).json("Продажа удалена!");
   } catch (err) {

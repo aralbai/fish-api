@@ -3,7 +3,6 @@ import {
   addSell,
   deleteSell,
   editSell,
-  editSellRepays,
   getDebtSells,
   getSell,
   getSells,
@@ -33,8 +32,6 @@ router.get("/:id", getSell);
 router.get("/", getSells);
 
 router.post("/", addSell);
-
-router.put("/repay/:id", editSellRepays);
 
 router.put("/:id", editSell);
 

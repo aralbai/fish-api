@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const sellSchema = new mongoose.Schema(
   {
-    purchase: {
+    purchaseId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
@@ -18,20 +18,22 @@ const sellSchema = new mongoose.Schema(
     },
     custumer: {
       id: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
+        type: mongoose.Schema.Types.ObjectId || null,
       },
       fullname: {
         type: String,
         required: true,
       },
     },
-
     amount: {
       type: Number,
       required: true,
     },
     price: {
+      type: Number,
+      required: true,
+    },
+    totalPrice: {
       type: Number,
       required: true,
     },
@@ -47,15 +49,6 @@ const sellSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    repays: {
-      type: [
-        {
-          amount: { type: Number, required: true },
-          date: { type: Date, default: Date.now },
-        },
-      ],
-      default: [],
-    },
     addedDate: {
       type: Date,
       required: true,
@@ -67,7 +60,6 @@ const sellSchema = new mongoose.Schema(
     },
     changedUserId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
     },
   },
   { timestamps: true }

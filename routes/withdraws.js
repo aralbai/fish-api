@@ -4,14 +4,17 @@ import {
   deleteWithdraw,
   editWithdraw,
   getTotalWithdraws,
+  getWithdraw,
   getWithdraws,
 } from "../controllers/withdraws.js";
 
 const router = express.Router();
 
+router.get("/", getWithdraws);
+
 router.get("/total", getTotalWithdraws);
 
-router.get("/", getWithdraws);
+router.get("/:id", getWithdraw);
 
 router.post("/", addWithdraw);
 

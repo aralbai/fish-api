@@ -3,6 +3,7 @@ import {
   addOutcome,
   deleteOutcome,
   editOutcome,
+  getOutcome,
   getOutcomes,
   getOutcomesQuery,
   getTotalOutcomes,
@@ -10,9 +11,11 @@ import {
 
 const router = express.Router();
 
+router.get("/", getOutcomes);
+
 router.get("/total", getTotalOutcomes);
 
-router.get("/", getOutcomes);
+router.get("/:id", getOutcome);
 
 router.get("/query", getOutcomesQuery);
 

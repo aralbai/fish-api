@@ -12,7 +12,6 @@ const productSchema = new mongoose.Schema(
     },
     changedUserId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
     },
   },
   { timestamps: true }

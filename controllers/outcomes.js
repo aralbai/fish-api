@@ -1,5 +1,17 @@
 import Outcome from "../models/Outcome.js";
 
+// Get single outcome
+export const getOutcome = async (req, res) => {
+  try {
+    const outcome = await Outcome.findOne({ _id: req.params.id });
+
+    res.status(200).json(outcome);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+// Get all outcomes
 export const getOutcomes = async (req, res) => {
   try {
     const outcomes = await Outcome.find().sort({ createdAt: -1 });
@@ -52,33 +64,60 @@ export const getOutcomesQuery = async (req, res) => {
   }
 };
 
+// Add new outcome
 export const addOutcome = async (req, res) => {
   try {
-    const newOutcome = new Outcome(req.body);
+    const data = {
+      amount: parseFloat(req.body.amount),
+      purpose: req.body.purpose,
+      addedDate: new Date(req.body.addedDate),
+      addedUserId: req.body.addedUserId,
+    };
+
+    const newOutcome = new Outcome(data);
 
     await newOutcome.save();
 
-    res.status(201).json("Клиент добавлен!");
+    res.status(201).json("Расход добавлен!");
   } catch (err) {
     res.status(500).json(err);
   }
 };
 
+// Edit outcome
 export const editOutcome = async (req, res) => {
   try {
-    await Outcome.findByIdAndUpdate(req.params.id, req.body);
+    const data = {
+      amount: parseFloat(req.body.amount),
+      purpose: req.body.purpose,
+      addedDate: new Date(req.body.addedDate),
+      changedUserId: req.body.changedUserId,
+    };
 
-    res.status(200).json("Клиент изменён!");
+    const updateOutcome = await Outcome.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: data,
+      },
+      { new: true }
+    );
+
+    if (!updateOutcome) {
+      return res.status(400).json("Outcome not found!");
+    }
+
+    res.status(200).json("Расход изменён!");
   } catch (err) {
     res.status(500).json(err);
   }
 };
 
+// Delete outcome
 export const deleteOutcome = async (req, res) => {
   try {
     await Outcome.findByIdAndDelete(req.params.id);
 
-    res.status(200).json("Клиент удалён!");
+    res.status(200).json("Расход удалён!");
   } catch (err) {
     res.status(500).json(err);
   }

@@ -1,17 +1,18 @@
 import mongoose from "mongoose";
 
-const outcomeSchema = new mongoose.Schema(
+const repaySchema = new mongoose.Schema(
   {
+    sellId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+    },
     amount: {
       type: Number,
       required: true,
     },
-    purpose: {
-      type: String,
-      required: true,
-    },
     addedDate: {
       type: Date,
+      required: true,
       default: new Date(),
     },
     addedUserId: {
@@ -25,6 +26,6 @@ const outcomeSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Outcome = new mongoose.model("Outcome", outcomeSchema);
+const Repay = new mongoose.model("Repay", repaySchema);
 
-export default Outcome;
+export default Repay;

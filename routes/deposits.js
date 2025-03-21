@@ -3,15 +3,18 @@ import {
   addDeposit,
   deleteDeposit,
   editDeposit,
+  getDeposit,
   getDeposits,
   getTotalDeposits,
 } from "../controllers/deposits.js";
 
 const router = express.Router();
 
+router.get("/", getDeposits);
+
 router.get("/total", getTotalDeposits);
 
-router.get("/", getDeposits);
+router.get("/:id", getDeposit);
 
 router.post("/", addDeposit);
 

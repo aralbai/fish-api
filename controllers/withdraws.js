@@ -18,6 +18,7 @@ export const getTotalWithdraws = async (req, res) => {
   }
 };
 
+// Get single withdraw
 export const getWithdraw = async (req, res) => {
   try {
     const withdraw = await Withdraw.findOne({ _id: req.params.id });
@@ -38,13 +39,19 @@ export const getWithdraws = async (req, res) => {
   }
 };
 
+// Adde new withdraw
 export const addWithdraw = async (req, res) => {
   try {
-    const newWithdraw = new Withdraw(req.body);
+    const newWithdraw = new Withdraw({
+      amount: parseFloat(req.body.amount),
+      toWhom: req.body.toWhom,
+      addedDate: new Date(req.body.addedDate),
+      addedUserId: req.body.addedUserId,
+    });
 
     await newWithdraw.save();
 
-    res.status(201).json("Депозит добавлен!");
+    res.status(201).json("Снят добавлен!");
   } catch (err) {
     res.status(500).json(err);
   }
@@ -52,19 +59,35 @@ export const addWithdraw = async (req, res) => {
 
 export const editWithdraw = async (req, res) => {
   try {
-    await Withdraw.findByIdAndUpdate(req.params.id, req.body);
+    const data = {
+      amount: parseFloat(req.body.amount),
+      toWhom: req.body.toWhom,
+      addedDate: new Date(req.body.addedDate),
+      changedUserId: req.body.changedUserId,
+    };
 
-    res.status(200).json("Депозит изменён!");
+    const updatedWithdraw = await Withdraw.findByIdAndUpdate(
+      req.params.id,
+      { $set: data },
+      { new: true }
+    );
+
+    if (!updatedWithdraw) {
+      return res.status(400).json("Withdraw not found!");
+    }
+
+    res.status(200).json("Снят изменён!");
   } catch (err) {
     res.status(500).json(err);
   }
 };
 
+// Delete withdraw
 export const deleteWithdraw = async (req, res) => {
   try {
     await Withdraw.findByIdAndDelete(req.params.id);
 
-    res.status(200).json("Депозит удалён!");
+    res.status(200).json("Снят удалён!");
   } catch (err) {
     res.status(500).json(err);
   }

@@ -1,5 +1,6 @@
 import Custumer from "../models/Custumer.js";
 
+// Get single custumer
 export const getCustumer = async (req, res) => {
   try {
     const custumer = await Custumer.findOne({ _id: req.params.id });
@@ -10,6 +11,7 @@ export const getCustumer = async (req, res) => {
   }
 };
 
+// Get all custumers
 export const getCustumers = async (req, res) => {
   try {
     const custumers = await Custumer.find().sort({ createdAt: -1 });
@@ -23,10 +25,7 @@ export const getCustumers = async (req, res) => {
 // Add new custumer
 export const addCustumer = async (req, res) => {
   try {
-    const newCustumer = new Custumer({
-      ...req.body,
-      changedUserId: req.body.addedUserId,
-    });
+    const newCustumer = new Custumer(req.body);
 
     await newCustumer.save();
 
@@ -70,6 +69,7 @@ export const editCustumerLimit = async (req, res) => {
   }
 };
 
+// Delete custumer
 export const deleteCustumer = async (req, res) => {
   try {
     await Custumer.findByIdAndDelete(req.params.id);
