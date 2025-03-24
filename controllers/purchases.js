@@ -21,7 +21,7 @@ export const getTotalPrice = async (req, res) => {
       {
         $group: {
           _id: null,
-          total: { $sum: "$given" },
+          total: { $sum: "$totalPrice" },
         },
       },
     ]);
@@ -93,7 +93,39 @@ export const getActivePurchases = async (req, res) => {
 // Get all purchases
 export const getPurchases = async (req, res) => {
   try {
-    const purchases = await Purchase.find().sort({ addedDate: -1 });
+    const { productId, supplierId, status, startDate, endDate } = req.query;
+
+    let filter = {};
+
+    if (startDate || endDate) {
+      filter.addedDate = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
+    if (productId) {
+      filter["product.id"] = productId;
+    }
+
+    if (supplierId) {
+      filter["supplier.id"] = supplierId;
+    }
+
+    if (status) {
+      if (status === "active") {
+        filter.remainingAmount = { $gt: 0 };
+      }
+
+      if (status === "deactive") {
+        filter.remainingAmount = 0;
+      }
+      if (status === "shortage") {
+        filter.shortage = { $gt: 0 };
+      }
+    }
+
+    const purchases = await Purchase.find(filter).sort({ addedDate: -1 });
 
     res.status(200).json(purchases);
   } catch (err) {
@@ -128,43 +160,20 @@ export const getPurchasesQuery = async (req, res) => {
 // Add new  purchase
 export const addPurchase = async (req, res) => {
   try {
-    let data = {
-      ...req.body,
+    const newPurchase = new Purchase({
+      product: req.body.product,
+      supplier: req.body.supplier,
+      carNumber: req.body.carNumber,
       amount: parseFloat(req.body.amount),
-      remainingAmount: parseFloat(req.body.amount),
-      changedUserId: req.body.addedUserId,
-      debt: parseFloat(req.body.debt),
-      discount: parseFloat(req.body.discount),
       price: parseFloat(req.body.price),
-    };
-
-    // Check product id is valid
-    if (mongoose.Types.ObjectId.isValid(req.body.product)) {
-      const product = await Product.findOne({ _id: req.body.product });
-
-      data.product = {
-        id: product?._id,
-        title: product?.title,
-      };
-    } else {
-      return res.status(400).json("Product not found!");
-    }
-
-    // Check supplier id is valid
-    if (mongoose.Types.ObjectId.isValid(req.body.supplier)) {
-      const supplier = await Supplier.findOne({ _id: req.body.supplier });
-
-      data.supplier = {
-        id: supplier?._id,
-        title: supplier?.title,
-      };
-    } else {
-      return res.status(400).json("Supplier not found!");
-    }
-
-    const newPurchase = new Purchase(data);
-
-    console.log(data);
+      discount: parseFloat(req.body.discount),
+      totalPrice:
+        parseFloat(req.body.amount) * parseFloat(req.body.price) -
+        parseFloat(req.body.discount),
+      remainingAmount: parseFloat(req.body.amount),
+      addedDate: new Date(req.body.addedDate),
+      addedUserId: req.body.addedUserId,
+    });
 
     await newPurchase.save();
 
@@ -180,24 +189,16 @@ export const editPurchase = async (req, res) => {
     product: req.body.product,
     supplier: req.body.supplier,
     carNumber: req.body.carNumber,
-    addedDate: new Date(req.body.addedDate),
     amount: parseFloat(req.body.amount),
     price: parseFloat(req.body.price),
     discount: parseFloat(req.body.discount),
-    debt: parseFloat(req.body.debt),
-    changedUserId: req.body.changedUserId,
     totalPrice:
-      parseFloat(req.body.price) * parseFloat(req.body.amount) -
+      parseFloat(req.body.amount) * parseFloat(req.body.price) -
       parseFloat(req.body.discount),
-    given:
-      parseFloat(req.body.price) * parseFloat(req.body.amount) -
-      parseFloat(req.body.discount) -
-      parseFloat(req.body.debt),
-    remainingAmount:
-      parseFloat(req.body.amount) - parseFloat(req.body.minAmount),
+    remainingAmount: parseFloat(req.body.amount),
+    addedDate: new Date(req.body.addedDate),
+    changedUserId: req.body.changedUserId,
   };
-
-  console.log(data);
 
   try {
     await Purchase.findByIdAndUpdate(

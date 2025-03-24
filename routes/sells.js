@@ -3,9 +3,9 @@ import {
   addSell,
   deleteSell,
   editSell,
+  getAllSells,
   getDebtSells,
   getSell,
-  getSells,
   getSellsQuery,
   getSinglePurchaseSells,
   getSingleUserDebtSells,
@@ -29,7 +29,7 @@ router.get("/single/purchase/:purchaseId", getSinglePurchaseSells);
 
 router.get("/:id", getSell);
 
-router.get("/", getSells);
+router.get("/", getAllSells);
 
 router.post("/", addSell);
 

@@ -15,9 +15,9 @@ router.get("/", getOutcomes);
 
 router.get("/total", getTotalOutcomes);
 
-router.get("/:id", getOutcome);
-
 router.get("/query", getOutcomesQuery);
+
+router.get("/:id", getOutcome);
 
 router.post("/", addOutcome);
 

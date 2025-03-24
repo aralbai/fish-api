@@ -76,9 +76,35 @@ export const getTotalSells = async (req, res) => {
 };
 
 // Get all sells
-export const getSells = async (req, res) => {
+export const getAllSells = async (req, res) => {
   try {
-    const sells = await Sell.find().sort({ createdAt: -1 });
+    console.log(req.query);
+    const { productId, custumerId, status, startDate, endDate } = req.query;
+
+    let filter = {};
+
+    if (startDate || endDate) {
+      filter.addedDate = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
+    if (productId) {
+      filter["product.id"] = productId;
+    }
+
+    if (custumerId) {
+      filter["custumer.id"] = custumerId;
+    }
+
+    if (status) {
+      if (status === "debts") {
+        filter.debt = { $gt: 0 };
+      }
+    }
+
+    const sells = await Sell.find(filter).sort({ addedDate: -1 });
 
     res.status(200).json(sells);
   } catch (err) {
