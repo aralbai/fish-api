@@ -75,7 +75,9 @@ export const register = async (req, res) => {
 // Get users without superadmin
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find({ role: { $ne: "superadmin" } });
+    const users = await User.find({ role: { $ne: "superadmin" } }).sort({
+      createdAt: -1,
+    });
 
     res.status(200).json(users);
   } catch (err) {
