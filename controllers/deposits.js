@@ -2,7 +2,6 @@ import Deposit from "../models/Deposit.js";
 
 // Get single deposit
 export const getDeposit = async (req, res) => {
-  console.log("adadsf");
   try {
     const deposit = await Deposit.findOne({ _id: req.params.id });
 
@@ -93,8 +92,6 @@ export const editDeposit = async (req, res) => {
       addedDate: new Date(req.body.addedDate),
       changedUserId: req.body.changedUserId,
     };
-
-    console.log(data);
 
     const updatedDeposit = await Deposit.findByIdAndUpdate(
       req.params.id,

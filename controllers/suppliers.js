@@ -39,8 +39,6 @@ export const addSupplier = async (req, res) => {
 // Edit supplier
 export const editSupplier = async (req, res) => {
   try {
-    console.log(req.body);
-
     await Supplier.findByIdAndUpdate(
       req.params.id,
       {

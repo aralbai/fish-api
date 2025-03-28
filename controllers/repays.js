@@ -53,8 +53,6 @@ export const deleteRepay = async (req, res) => {
       return res.status(400).json("Repay not found!");
     }
 
-    console.log(repay.amount + repay.amount);
-
     const updatedSell = await Sell.findByIdAndUpdate(
       req.params.sellId,
       { $inc: { debt: repay?.amount, given: -repay?.amount } },

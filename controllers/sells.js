@@ -101,7 +101,6 @@ export const getTotalSells = async (req, res) => {
 // Get all sells
 export const getAllSells = async (req, res) => {
   try {
-    console.log(req.query);
     const { productId, custumerId, status, startDate, endDate } = req.query;
 
     let filter = {};
@@ -162,8 +161,6 @@ export const getSellsQuery = async (req, res) => {
 //Get only single purchase sells
 export const getSinglePurchaseSells = async (req, res) => {
   try {
-    console.log(req.params.purchaseId);
-
     const sells = await Sell.find({
       purchaseId: req.params.purchaseId,
     }).sort({ createdAt: -1 });
@@ -176,7 +173,6 @@ export const getSinglePurchaseSells = async (req, res) => {
 
 // Add new sell
 export const addSell = async (req, res) => {
-  console.log(req.body);
   try {
     let data = {
       purchaseId: req.body.purchaseId,
