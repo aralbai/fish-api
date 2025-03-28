@@ -15,6 +15,31 @@ export const getDeposit = async (req, res) => {
 // Get total deposits
 export const getTotalDeposits = async (req, res) => {
   try {
+    const { startDate, endDate } = req.query;
+
+    if (startDate && endDate) {
+      const totalDeposits = await Deposit.aggregate([
+        {
+          $match: {
+            addedDate: {
+              $gte: new Date(startDate), // Start date (inclusive)
+              $lte: new Date(endDate), // End date (inclusive)
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$amount" },
+          },
+        },
+      ]);
+
+      return res
+        .status(200)
+        .json({ totalDeposits: totalDeposits[0]?.total || 0 });
+    }
+
     const totalDeposits = await Deposit.aggregate([
       {
         $group: {
@@ -24,7 +49,7 @@ export const getTotalDeposits = async (req, res) => {
       },
     ]);
 
-    res.json({ totalDeposits: totalDeposits[0]?.total || 0 });
+    res.status(200).json({ totalDeposits: totalDeposits[0]?.total || 0 });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -33,7 +58,7 @@ export const getTotalDeposits = async (req, res) => {
 // Get all deposits
 export const getDeposits = async (req, res) => {
   try {
-    const deposits = await Deposit.find().sort({ createdAt: -1 });
+    const deposits = await Deposit.find().sort({ addedDate: -1 });
 
     res.status(200).json(deposits);
   } catch (err) {

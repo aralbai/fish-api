@@ -3,6 +3,31 @@ import Withdraw from "../models/Withdraw.js";
 // Get total withdraws
 export const getTotalWithdraws = async (req, res) => {
   try {
+    const { startDate, endDate } = req.query;
+
+    if (startDate && endDate) {
+      const totalWithdraws = await Withdraw.aggregate([
+        {
+          $match: {
+            addedDate: {
+              $gte: new Date(startDate), // Start date (inclusive)
+              $lte: new Date(endDate), // End date (inclusive)
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$amount" },
+          },
+        },
+      ]);
+
+      return res
+        .status(200)
+        .json({ totalWithdraws: totalWithdraws[0]?.total || 0 });
+    }
+
     const totalWithdraws = await Withdraw.aggregate([
       {
         $group: {
@@ -12,7 +37,7 @@ export const getTotalWithdraws = async (req, res) => {
       },
     ]);
 
-    res.json({ totalWithdraws: totalWithdraws[0]?.total || 0 });
+    res.status(200).json({ totalWithdraws: totalWithdraws[0]?.total || 0 });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

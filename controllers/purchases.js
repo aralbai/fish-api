@@ -17,6 +17,31 @@ export const getPurchase = async (req, res) => {
 // Get total price of purchases
 export const getTotalPrice = async (req, res) => {
   try {
+    const { startDate, endDate } = req.query;
+
+    if (startDate && endDate) {
+      const totalPurchases = await Purchase.aggregate([
+        {
+          $match: {
+            addedDate: {
+              $gte: new Date(startDate), // Start date (inclusive)
+              $lte: new Date(endDate), // End date (inclusive)
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$totalPrice" },
+          },
+        },
+      ]);
+
+      return res
+        .status(200)
+        .json({ totalPurchases: totalPurchases[0]?.total || 0 });
+    }
+
     const totalPurchases = await Purchase.aggregate([
       {
         $group: {
@@ -26,7 +51,7 @@ export const getTotalPrice = async (req, res) => {
       },
     ]);
 
-    res.json({ totalPurchases: totalPurchases[0]?.total || 0 });
+    res.status(200).json({ totalPurchases: totalPurchases[0]?.total || 0 });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

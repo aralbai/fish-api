@@ -96,13 +96,36 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+export const getSingleUser = async (req, res) => {
+  try {
+    const user = await User.findOne({ _id: req.params.id });
+
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
 // Update user
 export const updateUser = async (req, res) => {
   try {
+    const { fullname, username, password, role } = req.body;
+
+    let data = {
+      fullname,
+      username,
+      role,
+    };
+
+    if (password) {
+      const hashedNewPassword = await bcrypt.hash(password, 10);
+
+      data.password = hashedNewPassword;
+    }
+
     await User.findByIdAndUpdate(
       req.params.id,
       {
-        $set: req.body,
+        $set: data,
       },
       { new: true, runValidators: true }
     );

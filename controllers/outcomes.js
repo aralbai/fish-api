@@ -14,7 +14,7 @@ export const getOutcome = async (req, res) => {
 // Get all outcomes
 export const getOutcomes = async (req, res) => {
   try {
-    const outcomes = await Outcome.find().sort({ createdAt: -1 });
+    const outcomes = await Outcome.find().sort({ addedDate: -1 });
 
     res.status(200).json(outcomes);
   } catch (err) {
@@ -25,6 +25,31 @@ export const getOutcomes = async (req, res) => {
 // Get total outcomes
 export const getTotalOutcomes = async (req, res) => {
   try {
+    const { startDate, endDate } = req.query;
+
+    if (startDate && endDate) {
+      const totalOutcomes = await Outcome.aggregate([
+        {
+          $match: {
+            addedDate: {
+              $gte: new Date(startDate), // Start date (inclusive)
+              $lte: new Date(endDate), // End date (inclusive)
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$amount" },
+          },
+        },
+      ]);
+
+      return res
+        .status(200)
+        .json({ totalOutcomes: totalOutcomes[0]?.total || 0 });
+    }
+
     const totalOutcomes = await Outcome.aggregate([
       {
         $group: {
@@ -34,7 +59,7 @@ export const getTotalOutcomes = async (req, res) => {
       },
     ]);
 
-    res.json({ totalOutcomes: totalOutcomes[0]?.total || 0 });
+    res.status(200).json({ totalOutcomes: totalOutcomes[0]?.total || 0 });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

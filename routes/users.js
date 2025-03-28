@@ -3,6 +3,7 @@ import {
   changePassword,
   deleteUser,
   getAllUsers,
+  getSingleUser,
   getUsers,
   login,
   register,
@@ -14,6 +15,8 @@ const router = expres.Router();
 router.get("/", getUsers);
 
 router.get("/all", getAllUsers);
+
+router.get("/:id", getSingleUser);
 
 router.post("/login", login);
 

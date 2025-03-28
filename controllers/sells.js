@@ -60,6 +60,29 @@ export const getSell = async (req, res) => {
 // Get total sells
 export const getTotalSells = async (req, res) => {
   try {
+    const { startDate, endDate } = req.query;
+
+    if (startDate && endDate) {
+      const totalSales = await Sell.aggregate([
+        {
+          $match: {
+            addedDate: {
+              $gte: new Date(startDate), // Start date (inclusive)
+              $lte: new Date(endDate), // End date (inclusive)
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$given" },
+          },
+        },
+      ]);
+
+      return res.status(200).json({ totalSales: totalSales[0]?.total || 0 });
+    }
+
     const totalSales = await Sell.aggregate([
       {
         $group: {
@@ -69,7 +92,7 @@ export const getTotalSells = async (req, res) => {
       },
     ]);
 
-    res.json({ totalSales: totalSales[0]?.total || 0 });
+    res.status(200).json({ totalSales: totalSales[0]?.total || 0 });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
