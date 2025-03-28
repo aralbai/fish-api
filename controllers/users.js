@@ -144,12 +144,12 @@ export const changePassword = async (req, res) => {
     const user = await User.findOne({ username: username });
 
     if (!user) {
-      return res.status(400).json("User not found");
+      return res.status(400).json({ message: "Пользователь не найден!" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json("Invalid credentials");
+      return res.status(400).json({ message: "Неверный пароль!" });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -162,7 +162,7 @@ export const changePassword = async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    res.status(200).json("User has been updated!");
+    res.status(200).json("Пароль изменен!");
   } catch (err) {
     res.status(500).json(err);
   }
