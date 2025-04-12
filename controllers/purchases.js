@@ -189,13 +189,13 @@ export const addPurchase = async (req, res) => {
       product: req.body.product,
       supplier: req.body.supplier,
       carNumber: req.body.carNumber,
-      amount: parseFloat(req.body.amount),
+      amount: parseFloat(req.body.amount * 1000),
       price: parseFloat(req.body.price),
       discount: parseFloat(req.body.discount),
       totalPrice:
         parseFloat(req.body.amount) * parseFloat(req.body.price) -
         parseFloat(req.body.discount),
-      remainingAmount: parseFloat(req.body.amount),
+      remainingAmount: parseFloat(req.body.amount * 1000),
       addedDate: new Date(req.body.addedDate),
       addedUserId: req.body.addedUserId,
     });

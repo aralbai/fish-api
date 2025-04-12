@@ -105,6 +105,7 @@ export const getSingleUser = async (req, res) => {
     res.status(500).json(err);
   }
 };
+
 // Update user
 export const updateUser = async (req, res) => {
   try {

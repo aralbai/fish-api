@@ -30,7 +30,7 @@ export const addSupplier = async (req, res) => {
 
     await newSupplier.save();
 
-    res.status(201).json("Поставщик добавлен!");
+    res.status(201).json("Сатыўшы добавлен!");
   } catch (err) {
     res.status(500).json(err);
   }
@@ -50,7 +50,7 @@ export const editSupplier = async (req, res) => {
       }
     );
 
-    res.status(200).json("Поставщик изменён!");
+    res.status(200).json("Сатыўшы изменён!");
   } catch (err) {
     res.status(500).json(err);
   }
@@ -60,7 +60,7 @@ export const deleteSupplier = async (req, res) => {
   try {
     await Supplier.findByIdAndDelete(req.params.id);
 
-    res.status(200).json("Поставщик удалён!");
+    res.status(200).json("Сатыўшы удалён!");
   } catch (err) {
     res.status(500).json(err);
   }

@@ -102,6 +102,10 @@ export const getTotalSells = async (req, res) => {
 export const getAllSells = async (req, res) => {
   try {
     const { productId, custumerId, status, startDate, endDate } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+
+    console.log(page);
 
     let filter = {};
 
@@ -126,9 +130,19 @@ export const getAllSells = async (req, res) => {
       }
     }
 
-    const sells = await Sell.find(filter).sort({ addedDate: -1 });
+    const total = await Sell.countDocuments(filter);
 
-    res.status(200).json(sells);
+    const sells = await Sell.find(filter)
+      .sort({ addedDate: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    res.status(200).json({
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+      sells,
+    });
   } catch (err) {
     res.status(500).json(err);
   }
