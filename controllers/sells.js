@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Sell from "../models/Sell.js";
 import Purchase from "../models/Purchase.js";
 import Repay from "../models/Repay.js";
+import Custumer from "../models/Custumer.js";
 
 // Get only debt sells
 export const getDebtSells = async (req, res) => {
@@ -105,8 +106,6 @@ export const getAllSells = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 50;
 
-    console.log(page);
-
     let filter = {};
 
     if (startDate || endDate) {
@@ -187,12 +186,80 @@ export const getSinglePurchaseSells = async (req, res) => {
 
 // Add new sell
 export const addSell = async (req, res) => {
+  // Tranzaction session di init qiliw
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
+    // Purchase ti tabiw. Tabilmasa return qiliw
+    const purchase = await Purchase.findById(req.body.purchaseId).session(
+      session
+    );
+
+    if (!purchase) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({ message: "Purchase tabilmadi!" });
+    }
+
+    // Product qaldiq mugdari satiw ushin jeterlime
+    if (purchase.remainingAmount < req.body.amount * 1000) {
+      await session.abortTransaction();
+      session.endSession();
+
+      return res.status(400).json({
+        message: `Produkt jeterli emes! Maksimum ${
+          purchase.remainingAmount / 1000
+        }kg bar!`,
+      });
+    }
+
+    //Klientt tabiw
+    const custumer = await Custumer.findById(req.body.custumer.id);
+    if (!custumer) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.statu(400).json({ message: "Klient tabilmadi" });
+    }
+
+    // Qarzdor sotuvlarni topish
+    const custumerDebts = await Sell.find({
+      "custumer.id": req.body.custumer.id,
+      debt: { $gt: 0 },
+    });
+
+    // Qarzlarning jami summasini hisoblash
+    const totalDebt = custumerDebts.reduce((sum, sell) => sum + sell.debt, 0);
+
+    // Klient limiti menen qazrlarin salistirip koriw
+    if (custumer.limit < totalDebt + req.body.debt) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({
+        message: `Klient limiti: ${Intl.NumberFormat("uz-UZ")
+          .format(custumer?.limit - totalDebt)
+          .replace(/,/g, " ")}`,
+      });
+    }
+
+    // Change purchase remaining amount
+    await Purchase.findByIdAndUpdate(
+      req.body.purchaseId,
+      {
+        remainingAmount: purchase.remainingAmount - req.body.amount * 1000,
+      },
+      {
+        new: true,
+        runValidators: true,
+        session,
+      }
+    );
+
     let data = {
       purchaseId: req.body.purchaseId,
       product: req.body.product,
       custumer: req.body.custumer,
-      amount: parseFloat(req.body.amount),
+      amount: parseFloat(req.body.amount * 1000),
       price: parseFloat(req.body.price),
       totalPrice:
         parseFloat(req.body.amount) * parseFloat(req.body.price) -
@@ -207,90 +274,131 @@ export const addSell = async (req, res) => {
       addedUserId: req.body.addedUserId,
     };
 
-    // Check purchaseId is valid
-    if (mongoose.Types.ObjectId.isValid(req.body.purchaseId)) {
-      // Change purchase remaining amount
-      await Purchase.findByIdAndUpdate(
-        req.body.purchaseId,
-        {
-          $inc: { remainingAmount: -req.body.amount },
-        },
-        {
-          new: true,
-          runValidators: true,
-        }
-      );
-    } else {
-      return res.status(400).json("Purchase not found!");
-    }
-
     const newSell = new Sell(data);
 
-    await newSell.save();
+    await newSell.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
 
     res.status(201).json("Продажа добавлена!");
   } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
     res.status(500).json(err);
   }
 };
 
 // Edit sell
 export const editSell = async (req, res) => {
+  // Tranzaksiyani init qiliw
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    const {
-      custumer,
-      addedDate,
-      amount,
+    // Selldi tabiw. Tabilmasa return qiliw
+    const sell = await Sell.findById(req.params.id).session(session);
+    if (!sell) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json("Sell tabilmadi!");
+    }
+
+    // Purchase ti tabiw. Eger tabilmasa return qiliw
+    const purchase = await Purchase.findById(sell.purchaseId).session(session);
+    if (!purchase) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({ message: "Purchase tabilmadi!" });
+    }
+
+    const newAmount = parseFloat(req.body.amount * 1000);
+    const price = parseFloat(req.body.price);
+    const discount = parseFloat(req.body.discount);
+    const debt = parseFloat(req.body.debt);
+
+    const expectedTotal = (newAmount / 1000) * price; // totalPrice formulasi
+
+    // Discount tekshirish
+    if (discount < 0 || discount > expectedTotal) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({
+        message: `Skidka qate kiritildi! 0 ham ${Intl.NumberFormat("uz-UZ")
+          .format(expectedTotal)
+          .replace(/,/g, " ")} arasinda boliwi mumkin!`,
+      });
+    }
+
+    // Debt va Given tekshirish
+    const given = expectedTotal - discount - debt;
+    if (given < 0 || debt < 0) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({
+        message: `Qarz qate kiritilgen. 0 ham ${Intl.NumberFormat("uz-UZ")
+          .format(expectedTotal - discount)
+          .replace(/,/g, " ")} arasinda boliwi mumkin!`,
+      });
+    }
+
+    const oldAmount = sell.amount; // eski mugdari
+    const difference = newAmount - oldAmount;
+
+    // Taza purchase ushin remaining amount
+    let newRemainingAmount = purchase.remainingAmount - difference;
+
+    if (isNaN(newAmount) || isNaN(difference) || isNaN(newRemainingAmount)) {
+      await session.abortTransaction();
+      session.endSession();
+      return res
+        .status(400)
+        .json({ message: "Esaplawdagi qatelik. Jaramsiz magliwmat!" });
+    }
+
+    // Tekshiruv: qoldiq salbiy bo‘lishi mumkin emas!
+    if (newRemainingAmount < 0) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({
+        message: `Produkt jeterli emes! Maksimum ${
+          purchase.remainingAmount / 1000
+        }kg bar!`,
+      });
+    }
+
+    // Update Purchase
+    await Purchase.findByIdAndUpdate(
+      sell.purchaseId,
+      { $set: { remainingAmount: newRemainingAmount } },
+      { new: true, runValidators: true, session }
+    );
+
+    const data = {
+      custumer: req.body.custumer,
+      addedDate: new Date(req.body.addedDate),
+      amount: newAmount,
       price,
       discount,
       debt,
-      changedUserId,
-      purchaseId,
-      prevAmount,
-    } = req.body;
-
-    const remaining = parseFloat(amount) - parseFloat(prevAmount);
-
-    const data = {
-      custumer,
-      addedDate: new Date(addedDate),
-      amount: parseFloat(amount),
-      price: parseFloat(price),
-      discount: parseFloat(discount),
-      debt: parseFloat(debt),
-      changedUserId,
-      totalPrice: parseFloat(amount) * parseFloat(price) - parseFloat(discount),
-      given:
-        parseFloat(amount) * parseFloat(price) -
-        parseFloat(discount) -
-        parseFloat(debt),
+      changedUserId: req.body.changedUserId,
+      totalPrice: expectedTotal,
+      given,
     };
 
-    const updatedSell = await Sell.findByIdAndUpdate(
-      req.params.id,
-      {
-        $set: data,
-      },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    await Sell.findByIdAndUpdate(req.params.id, data, {
+      new: true,
+      runValidators: true,
+      session,
+    });
 
-    if (!updatedSell) {
-      return res.stutus(400).json("Sell not found!");
-    }
+    await session.commitTransaction();
+    session.endSession();
 
-    await Purchase.findByIdAndUpdate(
-      purchaseId,
-      {
-        $inc: { remainingAmount: -remaining },
-      },
-      { new: true, runValidators: true }
-    );
-
-    res.status(200).json("Продажа изменена!");
+    res.status(200).json("Продажа успешно изменена!");
   } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
     res.status(500).json(err);
   }
 };

@@ -1,7 +1,6 @@
 import Purchase from "../models/Purchase.js";
-import Product from "../models/Product.js";
-import Supplier from "../models/Supplier.js";
-import mongoose, { disconnect } from "mongoose";
+import Sell from "../models/Sell.js";
+import mongoose from "mongoose";
 
 // Get one purchase with _id
 export const getPurchase = async (req, res) => {
@@ -107,7 +106,7 @@ export const getActivePurchases = async (req, res) => {
   try {
     const activePurchases = await Purchase.find({
       remainingAmount: { $gt: 0 },
-    });
+    }).sort({ addedDate: -1 });
 
     res.status(200).json(activePurchases);
   } catch (err) {
@@ -210,22 +209,66 @@ export const addPurchase = async (req, res) => {
 
 // Edit purchase
 export const editPurchase = async (req, res) => {
-  const data = {
-    product: req.body.product,
-    supplier: req.body.supplier,
-    carNumber: req.body.carNumber,
-    amount: parseFloat(req.body.amount),
-    price: parseFloat(req.body.price),
-    discount: parseFloat(req.body.discount),
-    totalPrice:
-      parseFloat(req.body.amount) * parseFloat(req.body.price) -
-      parseFloat(req.body.discount),
-    remainingAmount: parseFloat(req.body.amount),
-    addedDate: new Date(req.body.addedDate),
-    changedUserId: req.body.changedUserId,
-  };
-
   try {
+    // Purchase tin ozgeretugin manislerin jiynap aliw
+    const data = {
+      product: req.body.product,
+      supplier: req.body.supplier,
+      carNumber: req.body.carNumber,
+      amount: parseFloat(req.body.amount * 1000),
+      price: parseFloat(req.body.price),
+      discount: parseFloat(req.body.discount),
+      totalPrice:
+        parseFloat(req.body.amount) * parseFloat(req.body.price) -
+        parseFloat(req.body.discount),
+      addedDate: new Date(req.body.addedDate),
+      changedUserId: req.body.changedUserId,
+    };
+
+    // Mugdari 0 den ulken boliwi kerek
+    if (req.body.amount <= 0) {
+      return res
+        .status(400)
+        .json({ message: "Mugdari 0 den ulken boliwi kerek!" });
+    }
+
+    // Purchase ti id boyinsha bazadan izlep tabiw
+    const purchase = await Purchase.findById(req.params.id);
+    if (!purchase) {
+      return res.status(404).json({ message: "Purchase tawilmadi!" });
+    }
+
+    const soldAmount = purchase.amount - purchase.remainingAmount; // sotilgan gramm
+    const newAmountInGram = req.body.amount * 1000; // amount ti gramga otkeriw
+
+    // 1. Avval: sotilgan miqdor dan kam bo‘lmasligi kerak
+    if (newAmountInGram < soldAmount) {
+      return res.status(400).json({
+        message: `Mugdari keminde ${soldAmount / 1000} kg boliwi kerek! ${
+          soldAmount / 1000
+        } kg satilip ketken!`,
+      });
+    }
+
+    // 2. Agar hali hech narsa sotilmagan bo‘lsa:
+    if (soldAmount === 0) {
+      // yangilash — to‘liq qoldiq
+      data.remainingAmount = newAmountInGram;
+    } else {
+      // allaqachon sotilgan, yangi miqdor kirgan, qolganini hisoblash
+      data.remainingAmount = newAmountInGram - soldAmount;
+
+      // agar hisoblashdan so‘ng qolgan miqdor manfiy chiqsa — xato!
+      if (data.remainingAmount < 0) {
+        return res.status(400).json({
+          message: `Siz kiritgan miqdor juda kichik. Kamida ${
+            soldAmount / 1000
+          } kg bo‘lishi kerak.`,
+        });
+      }
+    }
+
+    // purchase ti update qiliw
     await Purchase.findByIdAndUpdate(
       req.params.id,
       {
@@ -249,24 +292,36 @@ export const editPurchaseShortage = async (req, res) => {
     const id = req.params.id;
     const shortage = req.body.shortage;
 
-    if (mongoose.Types.ObjectId.isValid(req.params.id)) {
-      const purchase = await Purchase.findOne({ _id: req.params.id });
-
-      await Purchase.findByIdAndUpdate(
-        id,
-        {
-          shortage: shortage,
-          remainingAmount:
-            purchase?.shortage + purchase?.remainingAmount - shortage,
-        },
-        {
-          new: true,
-          runValidators: true,
-        }
-      );
-    } else {
-      return res.status(400).json("Product not found!");
+    if (shortage * 1000 <= 0) {
+      return res
+        .status(400)
+        .json({ message: "Mugdari 0 den ulken boliwi kerek!" });
     }
+
+    const purchase = await Purchase.findById(id);
+    if (!purchase) {
+      return res.status(400).json("Purchase tabilmadi!");
+    }
+
+    if (shortage * 1000 > purchase.remainingAmount) {
+      return res.status(400).json({
+        message: `Kemshilik mugdari qalgan mugdardan asip ketti! Kemshilik:${shortage} > Qaldiq:${
+          purchase.remainingAmount / 1000
+        }`,
+      });
+    }
+
+    await Purchase.findByIdAndUpdate(
+      id,
+      {
+        shortage: shortage * 1000,
+        remainingAmount: purchase?.remainingAmount - shortage * 1000,
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
     res.status(200).json("Покупка изменена!");
   } catch (err) {

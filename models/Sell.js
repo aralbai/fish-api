@@ -28,26 +28,32 @@ const sellSchema = new mongoose.Schema(
     amount: {
       type: Number,
       required: true,
+      min: 0,
     },
     price: {
       type: Number,
       required: true,
+      min: 0,
     },
     totalPrice: {
       type: Number,
       required: true,
+      min: 0,
     },
     discount: {
       type: Number,
       default: 0,
+      min: 0,
     },
     debt: {
       type: Number,
       required: true,
+      min: 0,
     },
     given: {
       type: Number,
       required: true,
+      min: 0,
     },
     addedDate: {
       type: Date,
