@@ -232,7 +232,7 @@ export const addSell = async (req, res) => {
     const totalDebt = custumerDebts.reduce((sum, sell) => sum + sell.debt, 0);
 
     // Klient limiti menen qazrlarin salistirip koriw
-    if (custumer.limit < totalDebt + req.body.debt) {
+    if (custumer.limit !== -1 && totalDebt + req.body.debt > custumer.limit) {
       await session.abortTransaction();
       session.endSession();
       return res.status(400).json({
