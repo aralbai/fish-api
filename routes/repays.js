@@ -2,12 +2,12 @@ import express from "express";
 import {
   addRepay,
   deleteRepay,
-  getOnlySingleSellRepays,
+  getOnlySingleCustumerRepays,
 } from "../controllers/repays.js";
 
 const router = express.Router();
 
-router.get("/:sellId", getOnlySingleSellRepays);
+router.get("/:custumerId", getOnlySingleCustumerRepays);
 
 router.post("/", addRepay);
 

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const repaySchema = new mongoose.Schema(
   {
-    sellId: {
+    custumerId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
@@ -18,9 +18,6 @@ const repaySchema = new mongoose.Schema(
     addedUserId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-    },
-    changedUserId: {
-      type: mongoose.Schema.Types.ObjectId,
     },
   },
   { timestamps: true }
